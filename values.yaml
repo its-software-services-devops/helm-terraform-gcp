@@ -1,0 +1,76 @@
+config:
+  project: "its-artifact-commons"
+  projectRegion: "asia-southeast1"
+  stateBucket: "its-terraform-states"
+  providerVersion: "~> 3.4.0"
+
+gceSets:  
+  groupName: "its-rancher-sandbox"
+  network: "default"
+  region: "asia-southeast1"
+
+  instances:
+    - host: "its-rancher-manager-01"
+      profile: "manager"
+      zone: "asia-southeast1-b"
+
+    - host: "its-rancher-master-01"
+      profile: "master"
+      zone: "asia-southeast1-b"
+
+    - host: "its-rancher-master-02"
+      profile: "master"
+      zone: "asia-southeast1-b"
+
+    - host: "its-rancher-worker-01"
+      profile: "worker"
+      zone: "asia-southeast1-b"
+
+  profiles:
+    manager:
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.5"
+      bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
+      bootDiskSize: 100
+      computeType: "e2-small"    
+      localPublicKeyFile: "D:/dev/keys/id_rsa.pub"
+      localPrivateKeyFile: "D:/dev/keys/id_rsa"
+      deletionProtection: false
+      sshUser: "cicd"
+      localProvisionerFile: "scripts/provisioner.bash"
+      remoteProvisionerPath: "/home/cicd"
+      tags: '["k8s-manager"]'
+      externalDisks: []
+      serviceAccount: "devops-cicd@its-artifact-commons.iam.gserviceaccount.com"
+      enableNatIP: true
+
+    master:
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.5"
+      bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
+      bootDiskSize: 100
+      computeType: "e2-small"    
+      localPublicKeyFile: "D:/dev/keys/id_rsa.pub"
+      localPrivateKeyFile: "D:/dev/keys/id_rsa"
+      deletionProtection: false
+      sshUser: "cicd"
+      localProvisionerFile: "scripts/provisioner.bash"
+      remoteProvisionerPath: "/home/cicd"
+      tags: '["k8s-master"]'
+      externalDisks: []
+      serviceAccount: "devops-cicd@its-artifact-commons.iam.gserviceaccount.com"
+      enableNatIP: false
+
+    worker:
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.5"
+      bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
+      bootDiskSize: 100
+      computeType: "e2-small"    
+      localPublicKeyFile: "D:/dev/keys/id_rsa.pub"
+      localPrivateKeyFile: "D:/dev/keys/id_rsa"
+      deletionProtection: false
+      sshUser: "cicd"
+      localProvisionerFile: "scripts/provisioner.bash"
+      remoteProvisionerPath: "/home/cicd"
+      tags: '["k8s-worker"]'
+      externalDisks: []
+      serviceAccount: "devops-cicd@its-artifact-commons.iam.gserviceaccount.com"
+      enableNatIP: false
