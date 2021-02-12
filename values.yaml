@@ -28,7 +28,7 @@ gceSets:
 
   profiles:
     manager:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.5"
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.6"
       bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
       bootDiskSize: 100
       computeType: "e2-small"    
@@ -44,8 +44,8 @@ gceSets:
       enableNatIP: true
 
     master:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.5"
-      bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.6"
+      bootDiskImage: "projects/cos-cloud/global/images/cos-beta-89-16108-0-69" 
       bootDiskSize: 100
       computeType: "e2-small"    
       localPublicKeyFile: "D:/dev/keys/id_rsa.pub"
@@ -60,8 +60,8 @@ gceSets:
       enableNatIP: false
 
     worker:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.5"
-      bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.6"
+      bootDiskImage: "projects/cos-cloud/global/images/cos-beta-89-16108-0-69"
       bootDiskSize: 100
       computeType: "e2-small"    
       localPublicKeyFile: "D:/dev/keys/id_rsa.pub"
