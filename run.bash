@@ -1,4 +1,4 @@
 #/bin/bash
 
-helm template . \
+helm template charts \
 --name-template demo --debug
