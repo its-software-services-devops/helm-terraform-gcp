@@ -1,7 +1,7 @@
 # Repo : https://its-software-services-devops.github.io/helm-terraform-gcp/
 
 apiVersion: v2
-name: helm-cloudrun-app
+name: helm-terraform-gcp
 description: A Helm chart for CloudRun
 
 # A chart can be either an 'application' or a 'library' chart.
