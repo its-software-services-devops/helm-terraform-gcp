@@ -1,3 +1,4 @@
+#FORMAT:TERRAFORM
 00_setting.tf: |
   terraform {
     required_providers {

@@ -1,5 +1,5 @@
 {{- $ctx := .Values.gceSets }}
-
+#FORMAT:TERRAFORM
 01_instance_set.tf: |
   {{- range $ctx.instances }}
   {{ $vm := . }}
