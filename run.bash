@@ -1,5 +1,5 @@
 #/bin/bash
 
 helm template charts \
--f test-value.yaml \
+-f test-gce-rke.yaml \
 --name-template demo --debug

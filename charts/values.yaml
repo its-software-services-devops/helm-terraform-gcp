@@ -4,11 +4,4 @@ config:
   stateBucket: "its-terraform-states"
   providerVersion: "~> 3.4.0"
 
-gceSets:  
-  groupName: "its-demo-sandbox"
-  network: "default"
-  region: "asia-southeast1"
-
-  instances: []
-
-  profiles: {}
+providers: {}
