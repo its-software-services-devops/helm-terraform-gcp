@@ -1,18 +1,42 @@
+{{- $ctx := .Values }}
+#FORMAT:TERRAFORM
 00_setting.tf: |
   terraform {
-    required_providers {
-      google = "{{ .Values.config.providerVersion }}"
-    }
-
     backend "gcs" {
       bucket  = "{{ .Values.config.stateBucket }}"
       prefix  = "tf-{{ .Values.config.project }}-gcp"
-    }  
+    } 
+    
+    required_providers {      
+      {{- range $key, $provider := $ctx.providers }}
+
+      {{- if eq $key "google" }}
+      google = "{{ $provider.version }}"
+      {{- end }}
+
+      {{- if eq $key "rke" }}
+      rke = {
+        version = "{{ $provider.version }}"
+        source = "{{ $provider.source }}"
+      }
+      {{- end }}
+
+      {{- end }}
+    }
   }
 
+  {{- range $key, $provider := $ctx.providers }}
+  {{- if eq $key "google" }}
   provider "google" {  
-    project     = "{{ .Values.config.project }}"
-    region      = "{{ .Values.config.projectRegion }}"
-    
-    #credentials = file("D:/dev/keys/its-artifact-commons-6eb8e8c315b3.json")
+    project     = "{{ $provider.project }}"
+    region      = "{{ $provider.region }}"
   }
+  {{- end }}
+
+  {{- if eq $key "rke" }}
+  provider "rke" {
+    log_file = "{{ $provider.logFile }}"
+  }
+  {{- end }}
+  {{- end }}
+

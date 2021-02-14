@@ -1,8 +1,13 @@
 config:
   project: "its-artifact-commons"
-  projectRegion: "asia-southeast1"
   stateBucket: "its-terraform-states"
-  providerVersion: "~> 3.4.0"
+
+providers:
+  google: 
+    source: "hashicorp/google"
+    version: "~> 3.4.0"
+    project: "its-artifact-commons"
+    region: "asia-southeast1"
 
 gceSets:  
   groupName: "its-rancher-sandbox"
@@ -37,6 +42,7 @@ gceSets:
       deletionProtection: false
       sshUser: "cicd"
       localProvisionerFile: "scripts/provisioner.bash"
+      localStartupScript: "scripts/startup.bash"
       remoteProvisionerPath: "/home/cicd"
       tags: '["k8s-manager"]'
       externalDisks: []

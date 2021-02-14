@@ -1,5 +1,6 @@
+{{ if hasKey .Values "gceSets" }}
 {{- $ctx := .Values.gceSets }}
-
+#FORMAT:TERRAFORM
 01_instance_set.tf: |
   {{- range $ctx.instances }}
   {{ $vm := . }}
@@ -9,7 +10,7 @@
   module "mod-{{ $vm.host }}" {
     source          = "{{ $profile.terraformVmModule }}"
     compute_name    = "{{ $vm.host }}"
-    compute_seq     = "00"
+    compute_seq     = ""
     vm_tags         = {{ $profile.tags }}
     vm_service_account = "{{ $profile.serviceAccount }}"
     boot_disk_image  = "{{ $profile.bootDiskImage }}"
@@ -30,3 +31,4 @@
 
   {{- end }}
   {{- end }}
+{{- end }}  

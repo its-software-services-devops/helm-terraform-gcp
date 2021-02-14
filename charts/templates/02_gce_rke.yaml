@@ -1,0 +1,76 @@
+{{ if hasKey .Values "gceRke" }}
+{{- $ctx := .Values.gceRke }}
+#FORMAT:TERRAFORM
+02_gce_rke.tf: |
+  {{- range $ctx.instances }}
+  {{ $vm := . }}
+  {{- if not (contains $vm.mode "register|unregister|remove") }}
+
+  Unknown mode [{{ $vm.mode }}] from vm [{{ $vm.host }}]!!!
+  This intend to make terraform syntax error.
+
+  {{- end}}  
+  {{- range $key, $profile := $ctx.profiles }}
+
+  {{- if and (eq $key $vm.profile) (or (eq $vm.mode "register") (eq $vm.mode "unregister")) }}
+  module "mod-{{ $vm.host }}" {
+    source          = "{{ $profile.terraformVmModule }}"
+    compute_name    = "{{ $vm.host }}"
+    compute_seq     = ""
+    vm_tags         = {{ $profile.tags }}
+    vm_service_account = "{{ $profile.serviceAccount }}"
+    boot_disk_image  = "{{ $profile.bootDiskImage }}"
+    boot_disk_size   = {{ $profile.bootDiskSize }}
+    public_key_file  = "{{ $profile.localPublicKeyFile }}"
+    private_key_file = "{{ $profile.localPrivateKeyFile }}"
+    vm_machine_type  = "{{ $profile.computeType }}"
+    vm_machine_zone  = "{{ $vm.zone }}"
+    vm_deletion_protection = {{ $profile.deletionProtection }}
+    ssh_user         = "{{ $profile.sshUser }}"
+    provisioner_local_path  = "{{ $profile.localProvisionerFile }}"
+    provisioner_remote_path = "{{ $profile.remoteProvisionerPath }}"
+    external_disks   = []
+    network_configs  = [{index = 1, network = "{{ $ctx.network }}", nat_ip = ""}]
+    create_nat_ip = {{ $profile.enableNatIP }}
+  } 
+  {{- end }}
+
+  {{- end }}
+  {{- end }}
+
+  #=== RKE cluster
+
+  resource rke_cluster "{{ $ctx.rke.cluster_name }}" {
+    cluster_name = "{{ $ctx.rke.cluster_name }}"
+    kubernetes_version = "{{ $ctx.rke.kubernetes_version }}"
+    ignore_docker_version = {{ $ctx.rke.ignore_docker_version }}
+    prefix_path = "{{ $ctx.rke.prefix_path }}"
+
+    {{- range $ctx.instances }}
+    {{- $vm := . }}
+    {{- $modName := printf "mod-%s" $vm.host }}
+    {{- $profile := index $ctx.profiles $vm.profile }}
+    
+    {{- if eq $vm.mode "register" }}
+
+    nodes {
+      address          = module.{{ $modName }}.instance_private_ip_addr
+      internal_address = module.{{ $modName }}.instance_private_ip_addr
+      user             = "{{ $profile.sshUser }}"
+      role             = {{ $vm.role }}
+      ssh_key          = file("{{ $profile.localPrivateKeyFile }}")
+    }
+
+    {{- end }}
+
+    {{- end }}
+  }
+
+  {{- range $ctx.outputs }}
+  {{ $name := . }}
+  output {{ $ctx.rke.cluster_name }}-{{ $name }} { 
+    value = rke_cluster.{{ $ctx.rke.cluster_name }}.{{ $name }}
+  }
+  {{- end }}
+
+{{- end }}
