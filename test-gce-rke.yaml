@@ -56,7 +56,7 @@ gceRke:
       role: '["worker"]'
   profiles:
     manager:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.8"
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"
       bootDiskImage: "projects/centos-cloud/global/images/centos-7-v20200910"
       bootDiskSize: 100
       computeType: "e2-small"    
@@ -71,9 +71,10 @@ gceRke:
       externalDisks: []
       serviceAccount: "devops-cicd@its-artifact-commons.iam.gserviceaccount.com"
       enableNatIP: true
+      remoteExecByNatIP: true
 
     master:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.8"
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"
       bootDiskImage: "projects/cos-cloud/global/images/cos-beta-89-16108-0-69" 
       bootDiskSize: 100
       computeType: "e2-small"    
@@ -86,10 +87,11 @@ gceRke:
       tags: '["k8s-master"]'
       externalDisks: []
       serviceAccount: "devops-cicd@its-artifact-commons.iam.gserviceaccount.com"
-      enableNatIP: false
+      enableNatIP: true
+      remoteExecByNatIP: true
 
     worker:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.8"
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"
       bootDiskImage: "projects/cos-cloud/global/images/cos-beta-89-16108-0-69"
       bootDiskSize: 100
       computeType: "e2-small"    
@@ -103,3 +105,4 @@ gceRke:
       externalDisks: []
       serviceAccount: "devops-cicd@its-artifact-commons.iam.gserviceaccount.com"
       enableNatIP: false
+      remoteExecByNatIP: false
