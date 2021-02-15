@@ -56,7 +56,7 @@
     {{- if eq $vm.mode "register" }}
 
     nodes {
-      hostname_override = "{{ $modName }}"
+      hostname_override = "{{ $vm.host }}"
       address          = module.{{ $modName }}.instance_private_ip_addr
       internal_address = module.{{ $modName }}.instance_private_ip_addr
       user             = "{{ $profile.sshUser }}"
