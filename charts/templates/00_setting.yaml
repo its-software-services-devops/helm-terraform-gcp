@@ -4,7 +4,14 @@
   terraform {
     backend "gcs" {
       bucket  = "{{ .Values.config.stateBucket }}"
-      prefix  = "tf-{{ .Values.config.project }}-gcp"
+
+      {{- if not (hasKey .Values.config "bucketPrefix") }}
+      prefix = "tf-{{ .Values.config.project }}-gcp"
+      {{- else if eq .Values.config.bucketPrefix "" }}
+      prefix = "tf-{{ .Values.config.project }}-gcp"
+      {{- else }}
+      prefix = "{{ .Values.config.bucketPrefix }}"
+      {{- end }}
     } 
     
     required_providers {      

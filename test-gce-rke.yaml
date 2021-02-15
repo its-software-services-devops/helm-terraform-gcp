@@ -1,8 +1,7 @@
 config:
   project: "its-artifact-commons"
-  projectRegion: "asia-southeast1"
   stateBucket: "its-terraform-states"
-  providerVersion: "~> 3.4.0"
+  bucketPrefix: ""
 
 providers:
   google: 
