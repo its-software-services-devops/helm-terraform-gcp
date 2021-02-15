@@ -56,6 +56,7 @@
     {{- if eq $vm.mode "register" }}
 
     nodes {
+      hostname_override = "{{ $modName }}"
       address          = module.{{ $modName }}.instance_private_ip_addr
       internal_address = module.{{ $modName }}.instance_private_ip_addr
       user             = "{{ $profile.sshUser }}"
@@ -72,6 +73,7 @@
   {{ $name := . }}
   output {{ $ctx.rke.cluster_name }}-{{ $name }} { 
     value = rke_cluster.{{ $ctx.rke.cluster_name }}.{{ $name }}
+    sensitive = true
   }
   {{- end }}
 
