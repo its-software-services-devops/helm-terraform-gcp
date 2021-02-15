@@ -83,6 +83,7 @@ gceRke:
       deletionProtection: false
       sshUser: "cicd"
       localProvisionerFile: "scripts/provisioner.bash"
+      localStartupScript: "scripts/startup.bash"
       remoteProvisionerPath: "/home/cicd"
       tags: '["k8s-master"]'
       externalDisks: []
@@ -100,6 +101,7 @@ gceRke:
       deletionProtection: false
       sshUser: "cicd"
       localProvisionerFile: "scripts/provisioner.bash"
+      localStartupScript: "scripts/startup.bash"
       remoteProvisionerPath: "/home/cicd"
       tags: '["k8s-worker"]'
       externalDisks: []

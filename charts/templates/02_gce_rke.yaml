@@ -32,7 +32,8 @@
     external_disks   = []
     network_configs  = [{index = 1, network = "{{ $ctx.network }}", nat_ip = ""}]
     create_nat_ip = {{ $profile.enableNatIP }}
-    remote_exec_by_nat_ip = {{ $profile.remoteExecByNatIP }} 
+    remote_exec_by_nat_ip = {{ $profile.remoteExecByNatIP }}
+    startup_script_local_path = "{{ $profile.localStartupScript }}"
   } 
   {{- end }}
 
