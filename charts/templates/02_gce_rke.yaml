@@ -47,6 +47,11 @@
     kubernetes_version = "{{ $ctx.rke.kubernetes_version }}"
     ignore_docker_version = {{ $ctx.rke.ignore_docker_version }}
     prefix_path = "{{ $ctx.rke.prefix_path }}"
+    
+    {{- if hasKey $ctx "clusterYaml" }}
+    
+    cluster_yaml = file("{{ $ctx.clusterYaml }}")
+    {{- end }}
 
     {{- range $ctx.instances }}
     {{- $vm := . }}

@@ -19,6 +19,7 @@ gceRke:
   groupName: "its-rancher-sandbox"
   network: "default"
   region: "asia-southeast1"
+  clusterYaml: cluster.yaml
 
   rke:
     cluster_name: "its-rancher-demo"
