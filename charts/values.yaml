@@ -1,3 +1,6 @@
+global:
+  enabledSetting: true
+
 config:
   project: ""
   projectRegion: "asia-southeast1"

@@ -1,3 +1,6 @@
+global:
+  enabledSetting: false
+
 config:
   project: "its-artifact-commons"
   stateBucket: "its-terraform-states"
