@@ -5,7 +5,7 @@ config:
 
 providers:
   vsphere: 
-    version: "~> 3.4.0"
+    version: "1.26.0"
     user: ""
     password: ""
     vsphereServer: ""
@@ -23,6 +23,7 @@ vsphereRke:
   vcDataStore: "DS03_D2P-AAAVMSTOR01_NPRD_ANTHOS"
   vcPoolName: "Sandbox-Rancher"
   vcVAppName: ""
+  vcCluster: "TDMP-AAA-CL02-NON-PROD"
 
   clusterYaml: cluster.yaml
   affinityRule:
@@ -41,7 +42,7 @@ vsphereRke:
 
   instances:
     - host: "rke-demo-master-01"
-      ip: ["10.100.103.71"]
+      ip: ["10.100.103.71", "10.100.105.71"]
       profile: "master"
       mode: "register" # register, unregister, remove
       role: '["controlplane", "etcd"]'
@@ -73,21 +74,25 @@ vsphereRke:
       adminPassword: "fakEpassword"
       memorySize: 2048
       cpuNum: 1
-      guestId: "GuestID"
+      guestId: "centos7_64Guest"
+      imageLibName: "PACKER_VM_TEMPLATE"
+      imageLibItemName: ""      
       disks:
         bootDiskSize: 50
-        externals:
-          - index: 1
-            diskSize: 20
+        externals: []
+        #  - index: 1
+        #    diskSize: 20
       networks:
         defaultNetworkIndex: 0
-        defaultGateWay: "aaa.gateway.net"
+        defaultGateWay: "10.100.103.254"
         dnsList: '["172.22.192.1", "172.22.192.2"]'
         interfaces:
           - index: 1
-            vcNetwork: ""
+            vcNetwork: "ANTHOS_NPRD_USER_VLAN3303"
             netmask: 24
-
+          - index: 2
+            vcNetwork: "ANTHOS_NPRD_USER_VLAN3303XXXX"
+            netmask: 24
     worker:
       terraformVmModule: "gcs::https://www.googleapis.com/storage/v1/tdg-terraform-modules/terraform-vsphere-vm/1.0.10/modules.zip//modules"      
       vcenterTemplate: "AAA1P-DevOpsTemplateA01"
@@ -99,17 +104,19 @@ vsphereRke:
       adminPassword: "fakEpassword"
       memorySize: 2048
       cpuNum: 1
-      guestId: "GuestID"
+      guestId: "centos7_64Guest"
+      imageLibName: "PACKER_VM_TEMPLATE"
+      imageLibItemName: ""         
       disks:
         bootDiskSize: 50
-        externals:
-          - index: 1
-            diskSize: 20
+        externals: []
+        #  - index: 1
+        #    diskSize: 20
       networks:
         defaultNetworkIndex: 0
-        defaultGateWay: "aaa.gateway.net"
+        defaultGateWay: "10.100.103.254"
         dnsList: '["172.22.192.1", "172.22.192.2"]'
         interfaces:
           - index: 1
-            vcNetwork: ""
+            vcNetwork: "ANTHOS_NPRD_USER_VLAN3303"
             netmask: 24
