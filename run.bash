@@ -1,5 +1,5 @@
 #/bin/bash
 
 helm template charts \
--f test-gce-rke.yaml \
+-f test-vsphere-rke.yaml \
 --name-template demo --debug

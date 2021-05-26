@@ -1,0 +1,125 @@
+{{ if hasKey .Values "vsphereRke" }}
+{{- $ctx := .Values.vsphereRke }}
+#FORMAT:TERRAFORM
+03_vsphere_rke.tf: |
+  data "vsphere_datacenter" "dc" {
+    name = "{{ $ctx.vcDc }}"
+  }
+
+  data "vsphere_compute_cluster" "cluster" {
+    name          = "{{ $ctx.groupName }}"
+    datacenter_id = data.vsphere_datacenter.dc.id
+  }
+
+  {{- if ($ctx.affinityRule.enabled) }}
+
+  {{- range $ctx.instances }}
+  {{- $vm := . }}
+  {{- if not (has $vm.antiAffinityGroup $ctx.affinityRule.affinityGroups) }}
+  "002 - THIS BLOCK WILL MAKE TERRAFORM SYNTAX ERROR, PLEASE CHECK [{{ $vm.host }}] [{{ $vm.antiAffinityGroup }}]"
+  "002 - THIS MESSAGE IS INTENTIONALLY DISPLAYED TO PREVENT TERRAFORM ACCIDENTALLY CHANGES THE VMs ANTI-AFFINITY RULE!!!!"  
+  {{- end }}
+  {{- end }}
+
+  {{- range $ctx.affinityRule.affinityGroups }}
+  {{ $groupName := . }}
+  resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule_{{ $groupName }}" {
+    name                = "{{ $ctx.groupName }}-{{ $groupName }}-anti-affinity-rule"
+    compute_cluster_id  = data.vsphere_compute_cluster.cluster.id
+    virtual_machine_ids = [
+        {{- range $ctx.instances }}
+        {{- if eq $groupName .antiAffinityGroup }}
+        module.mod-{{ .host }}.virtual_machine_id,
+        {{- end }}
+        {{- end }}
+    ]
+  }
+  {{- end }}  
+
+  {{- end }}
+
+
+  {{- range $ctx.instances }}
+  {{ $vm := . }}
+  {{- if not (contains $vm.mode "register|unregister|remove") }}
+
+  Unknown mode [{{ $vm.mode }}] from vm [{{ $vm.host }}]!!!
+  This intend to make terraform syntax error.
+
+  {{- end}}  
+  {{- range $key, $profile := $ctx.profiles }}
+
+  {{- if and (eq $key $vm.profile) (or (eq $vm.mode "register") (eq $vm.mode "unregister")) }}
+  module "mod-{{ $vm.host }}" {
+    source          = "{{ $profile.terraformVmModule }}"
+    vm_host               = "{{ $vm.host }}"
+    vcenter_vm_name       = "{{ $vm.host }}"
+
+    vm_gateway            = "{{ $profile.networks.defaultGateWay }}"
+    vm_guest_id           = "{{ $profile.guestId }}"
+    vm_dns_list           = {{ $profile.networks.dnsList }}
+    num_cpus              = {{ $profile.cpuNum }}
+    memory_size           = {{ $profile.memorySize }}
+    disk_size             = {{ $profile.disks.bootDiskSize }}
+    disk_thin_provisioned = true
+    vcenter_datastore     = "{{ $ctx.vcDataStore }}"
+    vcenter_pool_name     = "{{ $ctx.vcPoolName }}"
+    vcenter_dc_name       = "{{ $ctx.vcDc }}"
+    vcenter_library_name      = ""
+    vcenter_library_item_name = ""
+    provisioner_script    = "{{ $profile.localProvisionerFile }}"
+    vcenter_vapp_name     = "{{ $ctx.vcVAppName }}"
+    vcenter_template_or_vm_name = "{{ $profile.vcenterTemplate }}"
+
+    admin_password  = "{{ $profile.adminPassword }}"
+    admin_user      = "{{ $profile.adminUser }}"
+    ssh-pub-key     = file("{{ $profile.localSshPubKeyPath }}")
+  } 
+  {{- end }}
+
+  {{- end }}
+  {{- end }}
+
+  #=== RKE cluster
+
+  resource rke_cluster "{{ $ctx.rke.cluster_name }}" {
+    cluster_name = "{{ $ctx.rke.cluster_name }}"
+    kubernetes_version = "{{ $ctx.rke.kubernetes_version }}"
+    ignore_docker_version = {{ $ctx.rke.ignore_docker_version }}
+    prefix_path = "{{ $ctx.rke.prefix_path }}"
+    
+    {{- if hasKey $ctx "clusterYaml" }}
+    
+    cluster_yaml = file("{{ $ctx.clusterYaml }}")
+    {{- end }}
+
+    {{- range $ctx.instances }}
+    {{- $vm := . }}
+    {{- $modName := printf "mod-%s" $vm.host }}
+    {{- $profile := index $ctx.profiles $vm.profile }}
+    
+    {{- if eq $vm.mode "register" }}
+
+    nodes {
+      hostname_override = "{{ $vm.host }}"
+      address          = module.{{ $modName }}.instance_private_ip_addr
+      internal_address = module.{{ $modName }}.instance_private_ip_addr
+      user             = "{{ $profile.sshUser }}"
+      role             = {{ $vm.role }}
+      ssh_key          = file("{{ $profile.localSshPrivateKeyPath }}")
+    }
+
+    {{- end }}
+
+    {{- end }}
+  }
+
+  {{- range $ctx.outputs }}
+  {{ $name := . }}
+  output {{ $ctx.rke.cluster_name }}-{{ $name }} { 
+    value = rke_cluster.{{ $ctx.rke.cluster_name }}.{{ $name }}
+    sensitive = true
+  }
+  {{- end }}
+
+{{- end }}

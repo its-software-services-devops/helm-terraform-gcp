@@ -1,0 +1,120 @@
+config:
+  project: "its-artifact-commons"
+  stateBucket: "its-terraform-states"
+  bucketPrefix: "vsphere-rke-unit-test"
+
+providers:
+  vsphere: 
+    version: "~> 3.4.0"
+    user: ""
+    password: ""
+    vsphereServer: ""
+
+  rke:
+    source: "rancher/rke"
+    version: "1.1.7"
+    logFile: "rke-cluster.log"
+
+vsphereRke:  
+  groupName: "rke-demo-sandbox"
+
+  vcHost: ""
+  vcDc: "TDMP-AAA-MTG8E-DC01"
+  vcDataStore: "DS03_D2P-AAAVMSTOR01_NPRD_ANTHOS"
+  vcPoolName: "Sandbox-Rancher"
+  vcVAppName: ""
+
+  clusterYaml: cluster.yaml
+  affinityRule:
+    enabled: true
+    affinityGroups: ['worker', 'master']
+
+  rke:
+    cluster_name: "rke-demo-sandbox"
+    kubernetes_version: "v1.19.6-rancher1-1"
+    ignore_docker_version: true
+    prefix_path: "/var/lib/toolbox/rke" #CoreOs need to use this path
+
+  outputs:
+    - kube_config_yaml      
+    - rke_state
+
+  instances:
+    - host: "rke-demo-master-01"
+      profile: "master"
+      mode: "register" # register, unregister, remove
+      role: '["controlplane", "etcd"]'
+      antiAffinityGroup: master
+
+    - host: "rke-demo-master-02"
+      profile: "master"
+      mode: "register"
+      role: '["controlplane", "etcd"]'
+      antiAffinityGroup: master
+
+    - host: "rke-demo-worker-01"
+      profile: "worker"
+      mode: "register"
+      role: '["worker"]'
+      antiAffinityGroup: worker
+
+    - host: "rke-demo-worker-02"
+      profile: "worker"
+      mode: "register"
+      role: '["worker"]'
+      antiAffinityGroup: worker
+
+  profiles:
+    master:
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"      
+      vcenterTemplate: ""
+      localProvisionerFile: "scripts/provisioner.bash"
+      localSshPrivateKeyPath: "id_rsa"
+      localSshPubKeyPath: "id_rsa.pub"
+      sshUser: "cicd"
+      adminUser: "dummy"
+      adminPassword: "fakEpassword"
+      memorySize: 2048
+      cpuNum: 1
+      guestId: "GuestID"
+      disks:
+        bootDiskSize: 50
+        externals:
+          - index: 1
+            diskSize: 20
+      networks:
+        defaultNetworkIndex: 0
+        defaultGateWay: "aaa.gateway.net"
+        dnsList: '["172.22.192.1", "172.22.192.2"]'
+        interfaces:
+          - index: 1
+            ip: ""
+            vcNetwork: ""
+            netmask: 24
+
+    worker:
+      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"      
+      vcenterTemplate: ""
+      localProvisionerFile: "scripts/provisioner.bash"
+      localSshPrivateKeyPath: "id_rsa"
+      localSshPubKeyPath: "id_rsa.pub"
+      sshUser: "cicd"
+      adminUser: "dummy"
+      adminPassword: "fakEpassword"
+      memorySize: 2048
+      cpuNum: 1
+      guestId: "GuestID"
+      disks:
+        bootDiskSize: 50
+        externals:
+          - index: 1
+            diskSize: 20
+      networks:
+        defaultNetworkIndex: 0
+        defaultGateWay: "aaa.gateway.net"
+        dnsList: '["172.22.192.1", "172.22.192.2"]'
+        interfaces:
+          - index: 1
+            ip: ""
+            vcNetwork: ""
+            netmask: 24

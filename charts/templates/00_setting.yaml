@@ -28,6 +28,12 @@
       }
       {{- end }}
 
+      {{- if eq $key "vsphere" }}
+      vsphere = {
+        version = "{{ $provider.version }}"
+      }
+      {{- end }}
+
       {{- end }}
     }
   }
@@ -45,5 +51,15 @@
     log_file = "{{ $provider.logFile }}"
   }
   {{- end }}
+
+  {{- if eq $key "vsphere" }}
+  provider "vsphere" {
+    user           = "{{ $provider.user }}"
+    password       = "{{ $provider.password }}"
+    vsphere_server = "{{ $provider.vsphereServer }}"
+    allow_unverified_ssl = true    
+  }
+  {{- end }}
+  
   {{- end }}
 
