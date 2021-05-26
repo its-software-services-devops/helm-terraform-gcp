@@ -32,6 +32,8 @@
     external_disks   = []
     network_configs  = [{index = 1, network = "{{ $ctx.network }}", nat_ip = ""}]
     create_nat_ip = {{ $profile.enableNatIP }}
+    remote_exec_by_nat_ip = {{ $profile.remoteExecByNatIP }}
+    startup_script_local_path = "{{ $profile.localStartupScript }}"
   } 
   {{- end }}
 
@@ -45,6 +47,11 @@
     kubernetes_version = "{{ $ctx.rke.kubernetes_version }}"
     ignore_docker_version = {{ $ctx.rke.ignore_docker_version }}
     prefix_path = "{{ $ctx.rke.prefix_path }}"
+    
+    {{- if hasKey $ctx "clusterYaml" }}
+    
+    cluster_yaml = file("{{ $ctx.clusterYaml }}")
+    {{- end }}
 
     {{- range $ctx.instances }}
     {{- $vm := . }}
@@ -54,6 +61,7 @@
     {{- if eq $vm.mode "register" }}
 
     nodes {
+      hostname_override = "{{ $vm.host }}"
       address          = module.{{ $modName }}.instance_private_ip_addr
       internal_address = module.{{ $modName }}.instance_private_ip_addr
       user             = "{{ $profile.sshUser }}"
@@ -70,6 +78,7 @@
   {{ $name := . }}
   output {{ $ctx.rke.cluster_name }}-{{ $name }} { 
     value = rke_cluster.{{ $ctx.rke.cluster_name }}.{{ $name }}
+    sensitive = true
   }
   {{- end }}
 
