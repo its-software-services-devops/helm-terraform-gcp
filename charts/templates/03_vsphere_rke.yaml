@@ -102,8 +102,8 @@
 
     nodes {
       hostname_override = "{{ $vm.host }}"
-      address          = module.{{ $modName }}.instance_private_ip_addr
-      internal_address = module.{{ $modName }}.instance_private_ip_addr
+      address          = module.{{ $modName }}.vm_default_ip_addr
+      internal_address = module.{{ $modName }}.vm_default_ip_addr
       user             = "{{ $profile.sshUser }}"
       role             = {{ $vm.role }}
       ssh_key          = file("{{ $profile.localSshPrivateKeyPath }}")

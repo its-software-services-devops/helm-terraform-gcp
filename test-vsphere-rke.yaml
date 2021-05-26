@@ -41,24 +41,21 @@ vsphereRke:
 
   instances:
     - host: "rke-demo-master-01"
+      ip: ["10.100.103.71"]
       profile: "master"
       mode: "register" # register, unregister, remove
       role: '["controlplane", "etcd"]'
       antiAffinityGroup: master
 
-    - host: "rke-demo-master-02"
-      profile: "master"
-      mode: "register"
-      role: '["controlplane", "etcd"]'
-      antiAffinityGroup: master
-
     - host: "rke-demo-worker-01"
+      ip: ["10.100.103.75"]
       profile: "worker"
       mode: "register"
       role: '["worker"]'
       antiAffinityGroup: worker
 
     - host: "rke-demo-worker-02"
+      ip: ["10.100.103.76"]
       profile: "worker"
       mode: "register"
       role: '["worker"]'
@@ -66,8 +63,8 @@ vsphereRke:
 
   profiles:
     master:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"      
-      vcenterTemplate: ""
+      terraformVmModule: "gcs::https://www.googleapis.com/storage/v1/tdg-terraform-modules/terraform-vsphere-vm/1.0.10/modules.zip//modules"      
+      vcenterTemplate: "AAA1P-DevOpsTemplateA01"
       localProvisionerFile: "scripts/provisioner.bash"
       localSshPrivateKeyPath: "id_rsa"
       localSshPubKeyPath: "id_rsa.pub"
@@ -88,13 +85,12 @@ vsphereRke:
         dnsList: '["172.22.192.1", "172.22.192.2"]'
         interfaces:
           - index: 1
-            ip: ""
             vcNetwork: ""
             netmask: 24
 
     worker:
-      terraformVmModule: "git::https://github.com/its-software-services-devops/tf-module-gcp-vm.git//modules?ref=1.0.9"      
-      vcenterTemplate: ""
+      terraformVmModule: "gcs::https://www.googleapis.com/storage/v1/tdg-terraform-modules/terraform-vsphere-vm/1.0.10/modules.zip//modules"      
+      vcenterTemplate: "AAA1P-DevOpsTemplateA01"
       localProvisionerFile: "scripts/provisioner.bash"
       localSshPrivateKeyPath: "id_rsa"
       localSshPubKeyPath: "id_rsa.pub"
@@ -115,6 +111,5 @@ vsphereRke:
         dnsList: '["172.22.192.1", "172.22.192.2"]'
         interfaces:
           - index: 1
-            ip: ""
             vcNetwork: ""
             netmask: 24
