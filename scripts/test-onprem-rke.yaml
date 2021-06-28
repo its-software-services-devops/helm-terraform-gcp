@@ -1,0 +1,154 @@
+rkeCluster:
+  vsphereProvisioner:
+    groupName: "rke-demo-sandbox"
+
+    vcHost: ""
+    vcDc: "TDMP-AAA-MTG8E-DC01"
+    vcDataStore: "DS03_D2P-AAAVMSTOR01_NPRD_ANTHOS"
+    vcPoolName: "Sandbox-Rancher"
+    vcVAppName: ""
+    vcCluster: "TDMP-AAA-CL02-NON-PROD"
+    
+    affinityRule:
+      enabled: true
+      affinityGroups: ['worker', 'master']
+
+  cluster:
+    clusterYaml: "rke-normalized-cfg.yaml" #Render on the fly from rke-config.yaml
+    cluster_name: "rke-demo-sandbox"
+    kubernetes_version: "v1.19.6-rancher1-1"
+    ignore_docker_version: true
+    prefix_path: "/var/lib/toolbox/rke" #CoreOs need to use this path
+
+    outputs:
+      - kube_config_yaml      
+      - rke_state
+
+    instances:
+      - host: "aaa1d-rke-demo-master-01"
+        ip: ["10.100.103.71"]
+        profile: "masterVsphere"
+        mode: "register" # register, unregister, remove
+        role: '["controlplane", "etcd"]'
+        antiAffinityGroup: master
+
+      - host: "aaa1d-rke-demo-master-02"
+        ip: ["10.100.103.72"]
+        profile: "masterVsphere"
+        mode: "register" # register, unregister, remove
+        role: '["controlplane", "etcd"]'
+        antiAffinityGroup: master
+
+      - host: "aaa1d-rke-demo-master-03"
+        ip: ["10.100.103.73"]
+        profile: "masterVsphere"
+        mode: "register" # register, unregister, remove
+        role: '["controlplane", "etcd"]'
+        antiAffinityGroup: master
+
+      - host: "aaa1d-rke-demo-worker-01"
+        ip: ["10.100.103.76"]
+        profile: "workerVsphere"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "aaa1d-rke-demo-worker-02"
+        ip: ["10.100.103.77"]
+        profile: "workerVsphere"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "aaa1d-rke-demo-worker-03"
+        ip: ["10.100.103.78"]
+        profile: "workerVsphere"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "aaa1d-rke-demo-worker-04"
+        ip: ["10.100.103.79"]
+        profile: "workerVsphere"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "aaa1d-rke-demo-worker-05"
+        ip: ["10.100.103.80"]
+        profile: "workerVsphere"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "aaa1d-rke-demo-worker-06"
+        ip: ["10.100.103.81"]
+        profile: "workerStatic"
+        mode: "register"
+        role: '["worker"]'
+        #antiAffinityGroup: worker #no need if pre-configured machine like bare metal
+
+    profiles:
+      workerStatic:
+        type: staticProvisioner
+        localSshPrivateKeyPath: "id_rsa"
+        sshUser: "devops"
+
+      masterVsphere:
+        type: vsphereProvisioner
+        terraformVmModule: "gcs::https://www.googleapis.com/storage/v1/tdg-terraform-modules/terraform-vsphere-vm/1.0.10/modules.zip//modules"      
+        vcenterTemplate: "AAA1P-DevOpsTemplateA01"
+        localProvisionerFile: "k8s-node-provisioner.bash"
+        localSshPrivateKeyPath: "id_rsa"
+        localSshPubKeyPath: "id_rsa.pub"
+        sshUser: "devops"
+        adminUser: "dummy"
+        adminPassword: "fakEpassword"
+        memorySize: 2048
+        cpuNum: 1
+        guestId: "centos7_64Guest"
+        imageLibName: "PACKER_VM_TEMPLATE"
+        imageLibItemName: ""      
+        disks:
+          bootDiskSize: 75
+          externals:
+            - index: 1
+              diskSize: 20
+        networks:
+          defaultNetworkIndex: 0
+          defaultGateWay: "10.100.103.254"
+          dnsList: '["172.22.192.1", "172.22.192.2"]'
+          interfaces:
+            - index: 1
+              vcNetwork: "ANTHOS_NPRD_USER_VLAN3303"
+              netmask: 24
+
+      workerVsphere:
+        type: vsphereProvisioner
+        terraformVmModule: "gcs::https://www.googleapis.com/storage/v1/tdg-terraform-modules/terraform-vsphere-vm/1.0.10/modules.zip//modules"      
+        vcenterTemplate: "AAA1P-DevOpsTemplateA01"
+        localProvisionerFile: "k8s-node-provisioner.bash"
+        localSshPrivateKeyPath: "id_rsa"
+        localSshPubKeyPath: "id_rsa.pub"
+        sshUser: "devops"
+        adminUser: "dummy"
+        adminPassword: "fakEpassword"
+        memorySize: 2048
+        cpuNum: 1
+        guestId: "centos7_64Guest"
+        imageLibName: "PACKER_VM_TEMPLATE"
+        imageLibItemName: ""      
+        disks:
+          bootDiskSize: 75
+          externals:
+            - index: 1
+              diskSize: 20
+        networks:
+          defaultNetworkIndex: 0
+          defaultGateWay: "10.100.103.254"
+          dnsList: '["172.22.192.1", "172.22.192.2"]'
+          interfaces:
+            - index: 1
+              vcNetwork: "ANTHOS_NPRD_USER_VLAN3303"
+              netmask: 24
+
