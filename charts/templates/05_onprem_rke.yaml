@@ -1,0 +1,138 @@
+{{ if hasKey .Values "rkeCluster" }}
+{{- $ctx := .Values.rkeCluster }}
+#FORMAT:TERRAFORM
+05_onprem_rke.tf: |
+  {{- if ($ctx.vsphereProvisioner) }}
+
+  data "vsphere_datacenter" "dc" {
+    name = "{{ $ctx.vsphereProvisioner.vcDc }}"
+  }
+  data "vsphere_compute_cluster" "cluster" {
+    name          = "{{ $ctx.vsphereProvisioner.vcCluster }}"
+    datacenter_id = data.vsphere_datacenter.dc.id
+  }
+
+    {{- if ($ctx.vsphereProvisioner.affinityRule.enabled) }}
+      {{- range $ctx.cluster.instances }}
+        {{- $vm := . }}
+        {{- if ($vm.antiAffinityGroup) }}
+          {{- if not (has $vm.antiAffinityGroup $ctx.vsphereProvisioner.affinityRule.affinityGroups) }}
+  "002 - THIS BLOCK WILL MAKE TERRAFORM SYNTAX ERROR, PLEASE CHECK [{{ $vm.host }}] [{{ $vm.antiAffinityGroup }}]"
+  "002 - THIS MESSAGE IS INTENTIONALLY DISPLAYED TO PREVENT TERRAFORM ACCIDENTALLY CHANGES THE VMs ANTI-AFFINITY RULE!!!!"  
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- range $ctx.vsphereProvisioner.affinityRule.affinityGroups }}
+    {{ $groupName := . }}
+  resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule_{{ $groupName }}" {
+    name                = "{{ $ctx.vsphereProvisioner.groupName }}-{{ $groupName }}-anti-affinity-rule"
+    compute_cluster_id  = data.vsphere_compute_cluster.cluster.id
+    virtual_machine_ids = [
+        {{- range $ctx.cluster.instances }}
+          {{- if (.antiAffinityGroup) }}
+            {{- if (eq $groupName .antiAffinityGroup) }}
+        module.mod-{{ .host }}.virtual_machine_id,
+            {{- end }}
+          {{- end }}
+        {{- end }}
+    ]
+  }
+    {{- end }}
+  {{- end }}
+
+  {{- range $ctx.cluster.instances }}
+    {{ $vm := . }}
+    {{- if not (contains $vm.mode "register|unregister|remove") }}
+  Unknown mode [{{ $vm.mode }}] from vm [{{ $vm.host }}]!!!
+  This intend to make terraform syntax error.
+    {{- end}}
+    
+    {{- range $key, $profile := $ctx.cluster.profiles }}
+      {{- if and (eq $key $vm.profile) (or (eq $vm.mode "register") (eq $vm.mode "unregister")) }}
+        {{- if (eq $profile.type "vsphereProvisioner") }}
+  module "mod-{{ $vm.host }}" {
+    source          = "{{ $profile.terraformVmModule }}"
+    vm_host               = "{{ $vm.host }}"
+    vcenter_vm_name       = "{{ $vm.host }}"
+
+    vm_gateway            = "{{ $profile.networks.defaultGateWay }}"
+    vm_guest_id           = "{{ $profile.guestId }}"
+    vm_dns_list           = {{ $profile.networks.dnsList }}
+    num_cpus              = {{ $profile.cpuNum }}
+    memory_size           = {{ $profile.memorySize }}
+    disk_size             = {{ $profile.disks.bootDiskSize }}
+    disk_thin_provisioned = true
+    vcenter_datastore     = "{{ $ctx.vsphereProvisioner.vcDataStore }}"
+    vcenter_pool_name     = "{{ $ctx.vsphereProvisioner.vcPoolName }}"
+    vcenter_dc_name       = "{{ $ctx.vsphereProvisioner.vcDc }}"
+    vcenter_library_name      = "{{ $profile.imageLibName }}"
+    vcenter_library_item_name = "{{ $profile.imageLibItemName }}"
+    provisioner_script    = "{{ $profile.localProvisionerFile }}"
+    vcenter_vapp_name     = "{{ $ctx.vsphereProvisioner.vcVAppName }}"
+    vcenter_template_or_vm_name = "{{ $profile.vcenterTemplate }}"
+
+    admin_password  = "{{ $profile.adminPassword }}"
+    admin_user      = "{{ $profile.adminUser }}"
+    ssh-pub-key     = file("{{ $profile.localSshPubKeyPath }}")
+
+    network_configs = [
+      {{- range $profile.networks.interfaces }}
+      {{- $nic := . }}
+      {{- $idx := sub $nic.index 1 }}
+      {{- $ip := index $vm.ip $idx }}
+      {index = {{ $nic.index }}, vm_ip = "{{ $ip }}", vcenter_network_name = "{{ $nic.vcNetwork }}", vm_netmask = {{ $nic.netmask }}, use_static_mac = false, mac_address = "" },
+      {{- end }}
+    ]
+  }
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  #=== RKE cluster
+
+  resource rke_cluster "{{ $ctx.cluster.cluster_name }}" {
+    cluster_name = "{{ $ctx.cluster.cluster_name }}"
+    kubernetes_version = "{{ $ctx.cluster.kubernetes_version }}"
+    ignore_docker_version = {{ $ctx.cluster.ignore_docker_version }}
+    prefix_path = "{{ $ctx.cluster.prefix_path }}"    
+    
+    {{- if hasKey $ctx.cluster "clusterYaml" }}
+    cluster_yaml = file("{{ $ctx.cluster.clusterYaml }}")
+    {{- end }}
+
+    {{- range $ctx.cluster.instances }}
+      {{- $vm := . }}
+      {{- $modName := printf "mod-%s" $vm.host }}
+      {{- $profile := index $ctx.cluster.profiles $vm.profile }}
+      {{- $default_ip := index $vm.ip 0 }}
+    
+      {{- if eq $vm.mode "register" }}
+    nodes {
+      hostname_override = "{{ $vm.host }}"
+        {{- if (eq $profile.type "vsphereProvisioner") }}
+      address          = module.{{ $modName }}.vm_default_ip_addr
+      internal_address = module.{{ $modName }}.vm_default_ip_addr
+        {{- else if (eq $profile.type "staticProvisioner") }}
+      address          = {{ $default_ip }}
+      internal_address = {{ $default_ip }}
+        {{- end }}
+      user             = "{{ $profile.sshUser }}"
+      role             = {{ $vm.role }}
+      ssh_key          = file("{{ $profile.localSshPrivateKeyPath }}")
+    }
+      {{- end }}
+    {{- end }}
+  }
+
+  {{- range $ctx.cluster.outputs }}
+  {{ $name := . }}
+  output {{ $name }} {
+    value = rke_cluster.{{ $ctx.cluster.cluster_name }}.{{ $name }}
+    sensitive = true
+  }
+  {{- end }}
+
+{{- end }}

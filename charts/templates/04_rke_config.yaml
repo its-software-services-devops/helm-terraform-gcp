@@ -1,0 +1,4 @@
+{{ if hasKey .Values "rkeConfig" }}
+{{- $ctx := .Values.rkeConfig }}
+{{- toYaml $ctx }}
+{{- end }}
