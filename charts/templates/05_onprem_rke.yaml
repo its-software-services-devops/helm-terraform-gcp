@@ -99,8 +99,8 @@
     ignore_docker_version = {{ $ctx.cluster.ignore_docker_version }}
     prefix_path = "{{ $ctx.cluster.prefix_path }}"    
     
-    {{- if hasKey $ctx.cluster "clusterYaml" }}    
-    cluster_yaml = file("{{ $ctx.clusterYaml }}")
+    {{- if hasKey $ctx.cluster "clusterYaml" }}
+    cluster_yaml = file("{{ $ctx.cluster.clusterYaml }}")
     {{- end }}
 
     {{- range $ctx.cluster.instances }}
