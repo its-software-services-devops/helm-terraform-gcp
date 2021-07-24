@@ -24,8 +24,9 @@
       {{- end }}
     {{- end }}
 
-    {{- range $ctx.vsphereProvisioner.affinityRule.affinityGroups }}
-    {{ $groupName := . }}
+    {{- if ($ctx.vsphereProvisioner.affinityRule.enabled) }}
+      {{- range $ctx.vsphereProvisioner.affinityRule.affinityGroups }}
+      {{ $groupName := . }}
   resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule_{{ $groupName }}" {
     name                = "{{ $ctx.vsphereProvisioner.groupName }}-{{ $groupName }}-anti-affinity-rule"
     compute_cluster_id  = data.vsphere_compute_cluster.cluster.id
@@ -39,7 +40,9 @@
         {{- end }}
     ]
   }
+      {{- end }}
     {{- end }}
+
   {{- end }}
 
   {{- range $ctx.cluster.instances }}
