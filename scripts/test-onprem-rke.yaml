@@ -10,7 +10,7 @@ rkeCluster:
     vcCluster: "TDMP-AAA-CL02-NON-PROD"
     
     affinityRule:
-      enabled: true
+      #enabled: false
       affinityGroups: ['worker', 'master']
 
   cluster:
