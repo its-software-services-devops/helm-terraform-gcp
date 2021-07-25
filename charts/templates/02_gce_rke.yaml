@@ -76,7 +76,7 @@
 
   {{- range $ctx.outputs }}
   {{ $name := . }}
-  output {{ $ctx.rke.cluster_name }}-{{ $name }} { 
+  output {{ $name }} { 
     value = rke_cluster.{{ $ctx.rke.cluster_name }}.{{ $name }}
     sensitive = true
   }
