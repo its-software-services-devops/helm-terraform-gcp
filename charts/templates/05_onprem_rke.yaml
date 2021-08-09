@@ -119,8 +119,8 @@
       address          = module.{{ $modName }}.vm_default_ip_addr
       internal_address = module.{{ $modName }}.vm_default_ip_addr
         {{- else if (eq $profile.type "staticProvisioner") }}
-      address          = {{ $default_ip }}
-      internal_address = {{ $default_ip }}
+      address          = "{{ $default_ip }}"
+      internal_address = "{{ $default_ip }}"
         {{- end }}
       user             = "{{ $profile.sshUser }}"
       role             = {{ $vm.role }}
