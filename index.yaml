@@ -34,6 +34,16 @@ entries:
   helm-terraform-gcp:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2021-10-16T04:18:40.261327646Z"
+    description: A Helm chart for CloudRun
+    digest: 9f05000cc4949285ed5ca54e43b23d8c322d645c5a602d3d988299ea56dfcbd7
+    name: helm-terraform-gcp
+    type: application
+    urls:
+    - https://its-software-services-devops.github.io/helm-terraform-gcp/helm-terraform-gcp-1.1.11.tgz
+    version: 1.1.11
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2021-10-16T04:10:09.988170036Z"
     description: A Helm chart for CloudRun
     digest: 842e95710e45310d0ffc5d73a6162e7d639505e434ac8ddaa27dfaae6b6a1ca5
@@ -222,4 +232,4 @@ entries:
     urls:
     - https://its-software-services-devops.github.io/helm-terraform-gcp/helm-terraform-gcp-1.1.2.tgz
     version: 1.1.2
-generated: "2021-10-16T04:10:09.987358431Z"
+generated: "2021-10-16T04:18:40.260708635Z"
