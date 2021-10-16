@@ -1,5 +1,5 @@
 #!/bin/bash
 
 helm template ../charts \
--f test-onprem-rke.yaml \
+-f test-static-only.yaml \
 --name-template demo --debug

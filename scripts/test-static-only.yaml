@@ -1,0 +1,71 @@
+rkeCluster:
+
+  cluster:
+    clusterYaml: "rendered-rke-cfg.yaml" #Render on the fly from rke-config.yaml
+    cluster_name: "moph-rke-his-gw-nonprod"
+    kubernetes_version: "v1.20.11-rancher1-1"
+    ignore_docker_version: true
+
+    outputs:
+      - kube_config_yaml
+      - rke_state
+
+    #===============================
+    profiles:
+      workerStatic:
+        type: staticProvisioner
+        localSshPrivateKeyPath: "id_rsa"
+        sshUser: "devops"
+
+    # Instances
+    instances:
+      #=== MASTER ===
+      - host: "rke-his-gw-nonprod-master-01"
+        ip: ["192.168.70.2"]
+        profile: "workerStatic"
+        mode: "register" # register, unregister, remove
+        role: '["controlplane", "etcd"]'
+        antiAffinityGroup: master
+
+      - host: "rke-his-gw-nonprod-master-02"
+        ip: ["192.168.70.3"]
+        profile: "workerStatic"
+        mode: "register" # register, unregister, remove
+        role: '["controlplane", "etcd"]'
+        antiAffinityGroup: master
+
+      - host: "rke-his-gw-nonprod-master-03"
+        ip: ["192.168.70.4"]
+        profile: "workerStatic"
+        mode: "register" # register, unregister, remove
+        role: '["controlplane", "etcd"]'
+        antiAffinityGroup: master
+
+      #=== WORKER ===
+      - host: "rke-his-gw-nonprod-worker-01"
+        ip: ["192.168.70.21"]
+        profile: "workerStatic"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "rke-his-gw-nonprod-worker-02"
+        ip: ["192.168.70.22"]
+        profile: "workerStatic"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "rke-his-gw-nonprod-worker-03"
+        ip: ["192.168.70.23"]
+        profile: "workerStatic"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
+
+      - host: "rke-his-gw-nonprod-worker-04"
+        ip: ["192.168.70.24"]
+        profile: "workerStatic"
+        mode: "register"
+        role: '["worker"]'
+        antiAffinityGroup: worker
