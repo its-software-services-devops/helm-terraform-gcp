@@ -2,31 +2,31 @@
 {{- $ctx := .Values.rkeCluster }}
 #FORMAT:TERRAFORM
 05_onprem_rke.tf: |
-  {{- if ($ctx.vsphereProvisioner) }}
-
+  {{- if hasKey .Values.rkeCluster "vsphereProvisioner" }}
   data "vsphere_datacenter" "dc" {
     name = "{{ $ctx.vsphereProvisioner.vcDc }}"
   }
+
   data "vsphere_compute_cluster" "cluster" {
-    name          = "{{ $ctx.vsphereProvisioner.vcCluster }}"
+    name         = "{{ $ctx.vsphereProvisioner.vcCluster }}"
     datacenter_id = data.vsphere_datacenter.dc.id
   }
 
-    {{- if ($ctx.vsphereProvisioner.affinityRule.enabled) }}
-      {{- range $ctx.cluster.instances }}
-        {{- $vm := . }}
-        {{- if ($vm.antiAffinityGroup) }}
-          {{- if not (has $vm.antiAffinityGroup $ctx.vsphereProvisioner.affinityRule.affinityGroups) }}
+  {{- if ($ctx.vsphereProvisioner.affinityRule.enabled) }}
+    {{- range $ctx.cluster.instances }}
+      {{- $vm := . }}
+      {{- if ($vm.antiAffinityGroup) }}
+        {{- if not (has $vm.antiAffinityGroup $ctx.vsphereProvisioner.affinityRule.affinityGroups) }}
   "002 - THIS BLOCK WILL MAKE TERRAFORM SYNTAX ERROR, PLEASE CHECK [{{ $vm.host }}] [{{ $vm.antiAffinityGroup }}]"
   "002 - THIS MESSAGE IS INTENTIONALLY DISPLAYED TO PREVENT TERRAFORM ACCIDENTALLY CHANGES THE VMs ANTI-AFFINITY RULE!!!!"  
-          {{- end }}
         {{- end }}
       {{- end }}
     {{- end }}
+  {{- end }}
 
-    {{- if ($ctx.vsphereProvisioner.affinityRule.enabled) }}
-      {{- range $ctx.vsphereProvisioner.affinityRule.affinityGroups }}
-      {{ $groupName := . }}
+  {{- if ($ctx.vsphereProvisioner.affinityRule.enabled) }}
+    {{- range $ctx.vsphereProvisioner.affinityRule.affinityGroups }}
+    {{ $groupName := . }}
   resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule_{{ $groupName }}" {
     name                = "{{ $ctx.vsphereProvisioner.groupName }}-{{ $groupName }}-anti-affinity-rule"
     compute_cluster_id  = data.vsphere_compute_cluster.cluster.id
@@ -40,10 +40,9 @@
         {{- end }}
     ]
   }
-      {{- end }}
     {{- end }}
-
   {{- end }}
+
 
   {{- range $ctx.cluster.instances }}
     {{ $vm := . }}
@@ -59,7 +58,6 @@
     source          = "{{ $profile.terraformVmModule }}"
     vm_host               = "{{ $vm.host }}"
     vcenter_vm_name       = "{{ $vm.host }}"
-
     vm_gateway            = "{{ $profile.networks.defaultGateWay }}"
     vm_guest_id           = "{{ $profile.guestId }}"
     vm_dns_list           = {{ $profile.networks.dnsList }}
@@ -75,11 +73,9 @@
     provisioner_script    = "{{ $profile.localProvisionerFile }}"
     vcenter_vapp_name     = "{{ $ctx.vsphereProvisioner.vcVAppName }}"
     vcenter_template_or_vm_name = "{{ $profile.vcenterTemplate }}"
-
     admin_password  = "{{ $profile.adminPassword }}"
     admin_user      = "{{ $profile.adminUser }}"
     ssh-pub-key     = file("{{ $profile.localSshPubKeyPath }}")
-
     network_configs = [
       {{- range $profile.networks.interfaces }}
       {{- $nic := . }}
@@ -92,6 +88,7 @@
         {{- end }}
       {{- end }}
     {{- end }}
+  {{- end }}
   {{- end }}
 
   #=== RKE cluster
